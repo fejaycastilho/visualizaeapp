@@ -12,7 +12,14 @@ export interface Resolution {
   label?: string;
 }
 
-export type ToolType = 'select' | 'eraser' | 'move' | 'hand';
+export type ToolType = 'select' | 'eraser' | 'move' | 'hand' | 'decor';
+
+export interface DecorZone {
+  id: string;
+  label: string;
+  color: string;
+  points: { x: number; y: number }[];
+}
 
 export interface Layer {
   id: string;
@@ -40,6 +47,14 @@ export interface Layer {
 
   // Video specific
   isPlaying?: boolean;
+
+  // Decor zone data (for re-rendering when label/fontSize change)
+  decorData?: {
+    points: { x: number; y: number }[];
+    label: string;
+    color: string;
+    fontSize: number;
+  };
 }
 
 export interface User {

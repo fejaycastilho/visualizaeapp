@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ModelType, Layer, ToolType, User, Resolution } from '../types';
 import { MODEL_2_RESOLUTIONS } from '../constants';
 import LayerPanel from './LayerPanel';
@@ -12,6 +12,8 @@ import { useCanvasInteraction } from './canvas/useCanvasInteraction';
 import { useCanvasGeneration } from './canvas/useCanvasGeneration';
 import { useCanvasLayers } from './canvas/useCanvasLayers';
 import { useCanvasUpload } from './canvas/useCanvasUpload';
+import { useDecorZones } from './canvas/useDecorZones';
+import DecorZoneOverlay from './canvas/DecorZoneOverlay';
 import { handleDownload, handleFitScreen, getCurrentResolutionMatch, getResolutionStatus } from './canvas/canvasUtils';
 
 interface CanvasModeProps {
@@ -112,6 +114,87 @@ const CanvasMode: React.FC<CanvasModeProps> = ({ user, layers, setLayers, regist
         onAutoSave,
     });
 
+    // --- Decor Zones Hook (polygon → layer) ---
+    const handleDecorLayerCreated = useCallback((layer: Layer) => {
+        setLayers(prev => [layer, ...prev]);
+        setSelectedLayerIds([layer.id]);
+        setRedoStack([]);
+    }, [setLayers, setSelectedLayerIds, setRedoStack]);
+
+    const {
+        isDecorMode,
+        setIsDecorMode,
+        drawingPoints,
+        cursorPos,
+        setCursorPos,
+        nextColor,
+        nextLabel,
+        addPoint,
+        closePolygon,
+        cancelDrawing,
+        undoLastPoint,
+    } = useDecorZones({ onLayerCreated: handleDecorLayerCreated });
+
+    const isDecorTool = selectedTool === 'decor';
+
+    // Sync decor mode with tool selection
+    const prevToolRef = React.useRef(selectedTool);
+    React.useEffect(() => {
+        if (selectedTool === 'decor' && !isDecorMode) setIsDecorMode(true);
+        if (prevToolRef.current === 'decor' && selectedTool !== 'decor' && isDecorMode) setIsDecorMode(false);
+        prevToolRef.current = selectedTool;
+    }, [selectedTool, isDecorMode, setIsDecorMode]);
+
+    // Keyboard shortcuts for decor drawing
+    React.useEffect(() => {
+        if (!isDecorTool) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't intercept keys when typing in an input
+            const tag = (e.target as HTMLElement)?.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+            if (e.key === 'Escape') cancelDrawing();
+            if (e.key === 'Enter') closePolygon();
+            if ((e.key === 'z' && (e.ctrlKey || e.metaKey)) || e.key === 'Backspace') {
+                e.preventDefault();
+                undoLastPoint();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isDecorTool, cancelDrawing, closePolygon, undoLastPoint]);
+
+    // --- Decor mouse handlers (click-to-add-vertex) ---
+    const handleDecorMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDecorTool) return handleMouseDown(e);
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const canvasX = (e.clientX - rect.left - canvasOffset.x) / zoom;
+        const canvasY = (e.clientY - rect.top - canvasOffset.y) / zoom;
+        addPoint(canvasX, canvasY);
+    }, [isDecorTool, handleMouseDown, canvasRef, canvasOffset, zoom, addPoint]);
+
+    const handleDecorMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDecorTool) return handleMouseMove(e);
+        if (drawingPoints.length === 0) return handleMouseMove(e);
+        const rect = canvasRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const canvasX = (e.clientX - rect.left - canvasOffset.x) / zoom;
+        const canvasY = (e.clientY - rect.top - canvasOffset.y) / zoom;
+        setCursorPos({ x: canvasX, y: canvasY });
+    }, [isDecorTool, drawingPoints.length, handleMouseMove, canvasRef, canvasOffset, zoom, setCursorPos]);
+
+    const handleDecorMouseUp = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDecorTool || drawingPoints.length > 0) return;
+        return handleMouseUp(e);
+    }, [isDecorTool, drawingPoints.length, handleMouseUp]);
+
+    const handleDecorDoubleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDecorTool || drawingPoints.length < 3) return;
+        e.stopPropagation();
+        closePolygon();
+    }, [isDecorTool, drawingPoints.length, closePolygon]);
+
     // --- Derived State ---
     const currentMatch = getCurrentResolutionMatch(selection, availableResolutions);
     const resStatus = getResolutionStatus(selection, currentMatch, activeModel);
@@ -204,15 +287,15 @@ const CanvasMode: React.FC<CanvasModeProps> = ({ user, layers, setLayers, regist
 
                 {/* Canvas Wrapper */}
                 <div className="flex-1 relative bg-[#0f0f12] overflow-hidden touch-none overscroll-none min-w-0"
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
+                    onMouseDown={isDecorTool ? handleDecorMouseDown : handleMouseDown}
+                    onMouseMove={isDecorTool ? handleDecorMouseMove : handleMouseMove}
+                    onMouseUp={isDecorTool ? handleDecorMouseUp : handleMouseUp}
+                    onMouseLeave={isDecorTool ? handleDecorMouseUp : handleMouseUp}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     onWheel={handleWheel}
-                    onDoubleClick={handleDoubleClick}
+                    onDoubleClick={isDecorTool ? handleDecorDoubleClick : handleDoubleClick}
                 >
 
                     <Toolbar
@@ -297,6 +380,17 @@ const CanvasMode: React.FC<CanvasModeProps> = ({ user, layers, setLayers, regist
                                     </div>
                                 );
                             })}
+
+                            {/* Decor Drawing Preview */}
+                            {isDecorTool && drawingPoints.length > 0 && (
+                                <DecorZoneOverlay
+                                    drawingPoints={drawingPoints}
+                                    cursorPos={cursorPos}
+                                    visualScale={visualScale}
+                                    nextColor={nextColor}
+                                    nextLabel={nextLabel}
+                                />
+                            )}
 
                             {selection && (
                                 <div

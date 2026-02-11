@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { Eye, EyeOff, Trash2, ArrowUp, ArrowDown, Download, Play, Pause, ImagePlus, RotateCcw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Eye, EyeOff, Trash2, ArrowUp, ArrowDown, Download, Play, Pause, ImagePlus, RotateCcw, Type } from 'lucide-react';
 import { Layer } from '../types';
+import { rerenderDecorLayer } from './canvas/useDecorZones';
 
 interface LayerMenuProps {
     layer: Layer;
@@ -26,6 +27,7 @@ const LayerMenu: React.FC<LayerMenuProps> = ({
     isFirst = false,
     isLast = false
 }) => {
+    const [decorLabel, setDecorLabel] = useState(layer.decorData?.label || '');
 
     const handleDownload = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -33,6 +35,19 @@ const LayerMenu: React.FC<LayerMenuProps> = ({
         link.href = layer.src || '';
         link.download = `${layer.name.replace(/\s+/g, '_')}.${layer.type === 'video' ? 'mp4' : 'png'}`;
         link.click();
+    };
+
+    const handleDecorLabelChange = (newLabel: string) => {
+        setDecorLabel(newLabel);
+        if (!layer.decorData) return;
+        const updates = rerenderDecorLayer(layer.decorData, { label: newLabel });
+        if (updates) onUpdate(updates);
+    };
+
+    const handleDecorFontSizeChange = (newSize: number) => {
+        if (!layer.decorData) return;
+        const updates = rerenderDecorLayer(layer.decorData, { fontSize: newSize });
+        if (updates) onUpdate(updates);
     };
 
     return (
@@ -124,6 +139,46 @@ const LayerMenu: React.FC<LayerMenuProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* Decor Editing Controls */}
+            {layer.decorData && (
+                <div className="space-y-3 px-1 mb-3">
+                    {/* Label edit */}
+                    <div>
+                        <div className="flex justify-between text-xs text-gray-400 mb-2 font-medium">
+                            <span className="flex items-center gap-1"><Type size={12} /> Nome</span>
+                        </div>
+                        <textarea
+                            rows={Math.min(4, Math.max(1, decorLabel.split('\n').length))}
+                            value={decorLabel}
+                            onChange={(e) => handleDecorLabelChange(e.target.value)}
+                            className="w-full bg-[#121215] border border-emerald-500/30 rounded-md px-3 py-1.5 text-sm text-white focus:border-emerald-500 focus:outline-none transition-all placeholder:text-gray-600 resize-none"
+                            placeholder="Ex: Sofá, Mesa..."
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                    {/* Font size */}
+                    <div>
+                        <div className="flex justify-between text-xs text-gray-400 mb-2 font-medium">
+                            <span>Tamanho da Letra</span>
+                            <span className="text-emerald-400">{layer.decorData.fontSize}px</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="10"
+                            max="80"
+                            step="1"
+                            value={layer.decorData.fontSize}
+                            onChange={(e) => handleDecorFontSizeChange(parseInt(e.target.value))}
+                            className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-400"
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
 
             {/* Sliders */}
             <div className="space-y-3 px-1">

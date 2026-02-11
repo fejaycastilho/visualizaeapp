@@ -91,8 +91,6 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
               <div
                 key={layer.id}
                 className={`flex flex-col transition-all duration-200 ${isDragOver ? 'border-t-2 border-purple-500 mt-1' : ''}`}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDrop={(e) => handleDrop(e, index)}
                 onDragEnd={handleDragEnd}
@@ -100,12 +98,16 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
                 <div
                   onClick={(e) => onSelect(layer.id, e)}
                   className={`group flex items-center p-2 rounded-md cursor-pointer transition-colors border border-transparent select-none ${isSelected
-                      ? 'bg-purple-500/10 border-purple-500/30'
-                      : 'hover:bg-white/5'
+                    ? 'bg-purple-500/10 border-purple-500/30'
+                    : 'hover:bg-white/5'
                     }`}
                 >
                   {/* Drag Handle */}
-                  <div className="mr-2 text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400">
+                  <div
+                    className="mr-2 text-gray-600 cursor-grab active:cursor-grabbing hover:text-gray-400"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                  >
                     <GripVertical size={14} />
                   </div>
 

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ToolType } from '../types';
-import { MousePointer2, Eraser, Hand, ImagePlus, Scan, Download, Move } from 'lucide-react';
+import { MousePointer2, Eraser, Hand, ImagePlus, Scan, Download, Move, Sofa } from 'lucide-react';
 
 interface ToolbarProps {
   selectedTool: ToolType;
@@ -31,6 +31,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
     { id: 'move', icon: Move, label: 'Mover' },
     { id: 'eraser', icon: Eraser, label: 'Borracha' },
     { id: 'hand', icon: Hand, label: 'Pan' },
+    { id: 'decor', icon: Sofa, label: 'Decorar Ambiente' },
   ];
 
   return (
@@ -45,7 +46,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             key={tool.id}
             onClick={() => onSelectTool(tool.id as ToolType)}
             className={`p-2 md:p-3 rounded-md transition-all ${selectedTool === tool.id
-              ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/20'
+              ? tool.id === 'decor' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20' : 'bg-purple-600 text-white shadow-lg shadow-purple-900/20'
               : 'text-gray-400 hover:bg-white/5 hover:text-gray-100'
               } ${tool.id === 'hand' ? 'hidden md:block' : ''}`}
             title={tool.label}
