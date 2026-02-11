@@ -1,99 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Visualizae 3.0</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            colors: {
-              gray: {
-                750: '#2d2d35',
-                850: '#1f1f23',
-                950: '#0f0f12',
-              },
-              purple: {
-                450: '#8b5cf6', // Visualizae accent
-                550: '#7c3aed',
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      body {
-        background-color: #18181b; /* Zinc 900 equivalent */
-        color: #e4e4e7;
-        overflow: hidden;
-        overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
-      }
-      /* Custom scrollbar for minimalism */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #3f3f46;
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #52525b;
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Visualizae 3.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #18181b;
+      /* Zinc 900 equivalent */
+      color: #e4e4e7;
+      overflow: hidden;
+      overscroll-behavior: none;
+      /* Prevent pull-to-refresh on mobile */
+    }
+
+    /* Custom scrollbar for minimalism */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #3f3f46;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #52525b;
+    }
+
+    /* --- RAINBOW ELITE COLLECTION (4 VARIANTS) --- */
+
+    /* 1. Linear (Horizontal Flow) - Slowed down to 6s */
+    @keyframes rainbow-linear {
+      0% {
+        background-position: 0% 50%;
       }
 
-      /* --- RAINBOW ELITE COLLECTION (4 VARIANTS) --- */
-
-      /* 1. Linear (Horizontal Flow) - Slowed down to 6s */
-      @keyframes rainbow-linear { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-      .effect-rainbow-linear { background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3); background-size: 400% 400%; animation: rainbow-linear 6s ease infinite; }
-
-      /* 2. Diagonal (45deg Flow) */
-      @keyframes rainbow-diagonal { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-      .effect-rainbow-diagonal { background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); background-size: 400% 400%; animation: rainbow-diagonal 3s linear infinite; }
-
-      /* 3. Vertical (Waterfall Flow) */
-      @keyframes rainbow-vertical { 0% { background-position: 50% 0%; } 100% { background-position: 50% 100%; } }
-      .effect-rainbow-vertical { background: linear-gradient(180deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000); background-size: 100% 400%; animation: rainbow-vertical 3s linear infinite; }
-
-      /* 4. Plasma (Hue Rotation - Smooth) */
-      @keyframes rainbow-plasma { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-      .effect-rainbow-plasma { background: linear-gradient(135deg, #ff0000, #ffff00, #0000ff); background-size: 200% 200%; animation: rainbow-plasma 2s linear infinite; }
-
-      /* Pulse Border Animation (Shared for selection box) */
-      @keyframes pulse-border {
-        0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
-        70% { box-shadow: 0 0 0 15px rgba(168, 85, 247, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+      50% {
+        background-position: 100% 50%;
       }
-      .animate-pulse-border {
-        animation: pulse-border 1.5s infinite;
+
+      100% {
+        background-position: 0% 50%;
       }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    }
+
+    .effect-rainbow-linear {
+      background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+      background-size: 400% 400%;
+      animation: rainbow-linear 6s ease infinite;
+    }
+
+    /* 2. Diagonal (45deg Flow) */
+    @keyframes rainbow-diagonal {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      100% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .effect-rainbow-diagonal {
+      background: linear-gradient(45deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+      background-size: 400% 400%;
+      animation: rainbow-diagonal 3s linear infinite;
+    }
+
+    /* 3. Vertical (Waterfall Flow) */
+    @keyframes rainbow-vertical {
+      0% {
+        background-position: 50% 0%;
+      }
+
+      100% {
+        background-position: 50% 100%;
+      }
+    }
+
+    .effect-rainbow-vertical {
+      background: linear-gradient(180deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3, #ff0000);
+      background-size: 100% 400%;
+      animation: rainbow-vertical 3s linear infinite;
+    }
+
+    /* 4. Plasma (Hue Rotation - Smooth) */
+    @keyframes rainbow-plasma {
+      0% {
+        filter: hue-rotate(0deg);
+      }
+
+      100% {
+        filter: hue-rotate(360deg);
+      }
+    }
+
+    .effect-rainbow-plasma {
+      background: linear-gradient(135deg, #ff0000, #ffff00, #0000ff);
+      background-size: 200% 200%;
+      animation: rainbow-plasma 2s linear infinite;
+    }
+
+    /* Pulse Border Animation (Shared for selection box) */
+    @keyframes pulse-border {
+      0% {
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 15px rgba(168, 85, 247, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0);
+      }
+    }
+
+    .animate-pulse-border {
+      animation: pulse-border 1.5s infinite;
+    }
+  </style>
+
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body>
-    <div id="root"></div>
+
+<body>
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

@@ -2,8 +2,7 @@
 export enum ModelType {
   NANO_BANANA_1 = 'gemini-2.5-flash-image', // "Nano Banana 1"
   NANO_BANANA_2 = 'gemini-3-pro-image-preview', // "Nano Banana 2"
-  VEO_FAST = 'veo-3.1-fast-generate-preview', // "Veo Fast"
-  VEO_HQ = 'veo-3.1-generate-preview', // "Veo HQ"
+  KLING_PRO = 'kling-v3-pro', // "Kling 3.0 Pro"
 }
 
 export interface Resolution {
@@ -28,7 +27,7 @@ export interface Layer {
   y: number;
   width: number;
   height: number;
-  
+
   // Initial state for reset
   initialX?: number;
   initialY?: number;
@@ -52,4 +51,69 @@ export interface User {
 export interface GenerationResult {
   imageUrl: string;
   prompt: string;
+}
+
+// --- Studio Mode Types ---
+
+export interface Shot {
+  prompt: string;
+  duration: string;
+}
+
+export interface Scene {
+  id: string;
+  startFrame: string | null;
+  endFrame: string | null;
+  shots: Shot[];
+  videos: string[];
+  selectedVideoIndex: number;
+  isGenerating: boolean;
+  variationCount: number;
+}
+
+// Serializable version of Scene (no blob URLs, uses storage paths)
+export interface StudioSceneData {
+  id: string;
+  shots: Shot[];
+  selectedVideoIndex: number;
+  variationCount: number;
+  startFrameStoragePath?: string;
+  endFrameStoragePath?: string;
+  videoStoragePaths: string[];
+}
+
+// --- Project History System ---
+
+export interface ProjectHistoryEntry {
+  id: string;
+  name: string;
+  thumbnail: string;
+  createdAt: number;
+  updatedAt: number;
+  userId: string;
+  layerCount: number;
+  canvasSize: { w: number; h: number };
+  studioScenes?: StudioSceneData[];
+  studioOrientation?: 'auto' | 'horizontal' | 'vertical';
+}
+
+export interface ProjectLayerData {
+  id: string;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  type: 'image' | 'generation' | 'video';
+  storagePath?: string;     // Firebase Storage path for the image
+  thumbnail?: string;       // Small base64 for layer thumbnail
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  initialX?: number;
+  initialY?: number;
+  initialWidth?: number;
+  initialHeight?: number;
+  feather?: number;
+  renderMode?: 'cover' | 'fill';
+  isPlaying?: boolean;
 }
